@@ -4,7 +4,8 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-__all__ = ['ShortUser', 'User', 'Repository', 'Commit', 'PushEvent']
+__all__ = ['ShortUser', 'User', 'Repository', 'Commit', 'PushEvent',
+           'Response']
 
 
 class ShortUser(BaseModel):
@@ -62,3 +63,7 @@ class PushEvent(BaseModel):
     repository: Repository
     pusher: User
     sender: User
+
+
+class Response(BaseModel):
+    ok: bool

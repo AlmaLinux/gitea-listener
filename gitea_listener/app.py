@@ -3,12 +3,13 @@ import logging
 import os.path
 
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from paho.mqtt.client import Client
 from ruamel.yaml import YAML
 
 from gitea_listener.config import Config
 from gitea_listener.encoders import DateTimeEncoder
-from gitea_listener.models import PushEvent
+from gitea_listener.models import PushEvent, Response
 
 
 SERVICE_NAME = 'gitea_listener'
@@ -51,12 +52,60 @@ async def shutdown():
     logger.info('Connection terminated successfully')
 
 
+def _push_data_into_topic(topic_name: str, data: PushEvent) -> bool:
+    global mqtt_client, config, logger
+    try:
+        payload_data = data.dict()
+        logger.debug(f'Publishing event into topic: {payload_data}')
+        mqtt_client.publish(topic_name, payload=json.dumps(
+            payload_data, cls=DateTimeEncoder))
+        logger.info('Data pushed successfully')
+        return True
+    except Exception as e:
+        logger.error(f'Error when publishing data into topic: {e}')
+        return False
+
+
+def _respond(topic_name: str, data: PushEvent) -> JSONResponse:
+    success = _push_data_into_topic(topic_name, data)
+    if not success:
+        return JSONResponse({'ok': False}, status_code=400)
+    return JSONResponse({'ok': True}, status_code=201)
+
+
+@app.post('/process-event-unmodified-repo', response_model=Response,
+          responses={201: {'model': Response}, 400: {'model': Response}})
+async def process_event_unmodified_repo(event_data: PushEvent):
+    """
+    Pushes event for unmodified repositories into specified topic
+
+    Parameters
+    ----------
+    event_data: PushEvent
+
+    Returns
+    -------
+    JSONResponse
+
+    """
+    return _respond(config.mqtt_topic_unmodified_repo, event_data)
+
+
 # TODO: Payload could be different for different event types,
 #  support all of them in future
-@app.post('/process-event')
-async def process_event(event_data: PushEvent):
-    global mqtt_client, config, logger
-    payload_data = event_data.dict()
-    logger.debug(f'Publishing event into topic: {payload_data}')
-    mqtt_client.publish(config.mqtt_topic, payload=json.dumps(
-        payload_data, cls=DateTimeEncoder))
+@app.post('/process-event-modified-repo', response_model=Response,
+          responses={201: {'model': Response}, 400: {'model': Response}})
+async def process_event_modified_repo(event_data: PushEvent):
+    """
+    Pushes event for modified repositories into specified topic
+
+    Parameters
+    ----------
+    event_data: PushEvent
+
+    Returns
+    -------
+    JSONResponse
+
+    """
+    return _respond(config.mqtt_topic_modified_repo, event_data)

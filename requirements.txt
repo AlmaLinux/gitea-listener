@@ -1,0 +1,5 @@
+paho-mqtt==1.5.1
+fastapi==0.68.1
+pydantic==1.8.2
+uvicorn==0.15.0
+ruamel.yaml==0.17.13

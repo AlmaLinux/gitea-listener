@@ -1,6 +1,7 @@
 import json
 import logging
 import os.path
+import time
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -38,6 +39,7 @@ async def startup():
     logger = logging.getLogger(SERVICE_NAME)
     logger.info('Starting connection to MQTT...')
     mqtt_client = Client(SERVICE_NAME)
+    mqtt_client.username_pw_set(config.mqtt_user, config.mqtt_password)
     mqtt_client.connect(config.mqtt_host, port=int(config.mqtt_port))
     mqtt_client.loop_start()
     logger.info('Connection successful')
@@ -52,13 +54,26 @@ async def shutdown():
     logger.info('Connection terminated successfully')
 
 
-def _push_data_into_topic(topic_name: str, data: PushEvent) -> bool:
+def _push_data_into_topic(topic_name: str, data: PushEvent,
+                          retries: int = 5, time_increment: int = 10) -> bool:
     global mqtt_client, config, logger
     try:
+        local_retries = retries
+        sleep_time = time_increment
         payload_data = data.dict()
         logger.debug(f'Publishing event into topic: {payload_data}')
-        mqtt_client.publish(topic_name, payload=json.dumps(
-            payload_data, cls=DateTimeEncoder))
+        success = False
+        send_info = None
+        while not success and local_retries > 0:
+            send_info = mqtt_client.publish(topic_name, payload=json.dumps(
+                payload_data, cls=DateTimeEncoder))
+            success = send_info.rc == 0
+            if not success:
+                time.sleep(sleep_time)
+                sleep_time += time_increment
+        if not success:
+            logger.error(f'Cannot publish the message, MQTT info: {send_info}')
+            return False
         logger.info('Data pushed successfully')
         return True
     except Exception as e:

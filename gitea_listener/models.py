@@ -54,11 +54,11 @@ class Commit(BaseModel):
 
 
 class PushEvent(BaseModel):
-    secret: str
-    ref: str
-    before: str
-    after: str
-    compare_url: str
+    secret: str = ''
+    ref: str = ''
+    before: str = ''
+    after: str = ''
+    compare_url: str = ''
     commits: typing.List[Commit]
     repository: Repository
     pusher: User

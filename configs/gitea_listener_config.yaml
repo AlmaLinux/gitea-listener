@@ -1,0 +1,5 @@
+---
+mqtt_host: mosquitto
+mqtt_port: 1883
+mqtt_topic_modified_repo: gitea-webhooks-modified
+mqtt_topic_unmodified_repo: gitea-webhooks-unmodified

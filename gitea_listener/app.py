@@ -102,6 +102,10 @@ async def process_event_unmodified_repo(event_data: PushEvent):
     JSONResponse
 
     """
+    global logger
+    logger.info(f'Got new event: ref {event_data.ref} '
+                f'commit_id {event_data.after} from repository '
+                f'{event_data.repository.name}')
     return _respond(config.mqtt_topic_unmodified_repo, event_data)
 
 

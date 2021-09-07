@@ -54,7 +54,7 @@ class Commit(BaseModel):
 
 
 class PushEvent(BaseModel):
-    secret: str = ''
+    secret: typing.Optional[str]
     ref: str = ''
     before: str = ''
     after: str = ''

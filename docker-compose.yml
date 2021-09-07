@@ -6,8 +6,10 @@ services:
       - ../data/gitea_listener/mosquito/data:/mosquitto/data
       - ../data/gitea_listener/mosquito/log:/mosquitto/log
       - ./configs/mosquitto_config:/mosquitto/config/mosquitto.conf
+      - ./configs/passwords.txt:/mosquitto/config/passwd_file
     ports:
       - "11883:1883"
+      - "18883:8883"
 
   gitea-listener:
     image: gitea-listener:latest

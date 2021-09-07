@@ -50,7 +50,6 @@ async def shutdown():
     global logger, mqtt_client
     logger.info('Shutting down connection to MQTT...')
     mqtt_client.loop_stop()
-    mqtt_client.reconnect()
     logger.info('Connection terminated successfully')
 
 

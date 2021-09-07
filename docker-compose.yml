@@ -48,8 +48,9 @@ services:
       - ./configs/mosquitto_config:/mosquitto/config/mosquitto.conf
       - ./configs/passwords.txt:/mosquitto/config/passwd_file
     ports:
-      - "1883:1883"
-      - "8883:8883"
+      - "11883:1883"
+      - "18883:8883"
+
   gitea-listener:
     networks:
       - gitea
@@ -59,7 +60,8 @@ services:
       context: .
     environment:
       GITEA_LISTENER_CONFIG_FILE: /code/gl_config.yaml
-    command: "bash -c 'source env/bin/activate && uvicorn --host 0.0.0.0 gitea_listener.app:app'"
+    command: "bash -c 'source env/bin/activate && uvicorn --host 0.0.0.0
+          gitea_listener.app:app'"
     restart: on-failure
     ports:
       - "9000:8000"

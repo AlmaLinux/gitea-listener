@@ -5,3 +5,4 @@ mqtt_user:
 mqtt_password:
 mqtt_topic_modified_repo: gitea-webhooks-modified
 mqtt_topic_unmodified_repo: gitea-webhooks-unmodified
+mqtt_qos: 2

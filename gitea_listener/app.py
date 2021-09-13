@@ -65,7 +65,7 @@ def _push_data_into_topic(topic_name: str, data: PushEvent,
         send_info = None
         while not success and local_retries > 0:
             send_info = mqtt_client.publish(topic_name, payload=json.dumps(
-                payload_data, cls=DateTimeEncoder))
+                payload_data, cls=DateTimeEncoder), qos=config.mqtt_qos)
             success = send_info.rc == 0
             if not success:
                 time.sleep(sleep_time)
@@ -102,6 +102,10 @@ async def process_event_unmodified_repo(event_data: PushEvent):
     JSONResponse
 
     """
+    global logger
+    logger.info(f'Got new event: ref {event_data.ref} '
+                f'commit_id {event_data.after} from repository '
+                f'{event_data.repository.name}')
     return _respond(config.mqtt_topic_unmodified_repo, event_data)
 
 

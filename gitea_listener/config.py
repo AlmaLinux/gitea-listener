@@ -12,3 +12,4 @@ class Config(BaseModel):
     mqtt_topic_modified_repo: str
     mqtt_topic_unmodified_repo: str
     log_level: str = 'INFO'
+    mqtt_qos: int
